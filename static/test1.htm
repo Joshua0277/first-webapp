@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="style2.css">
+<link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v=2">
+    <title>Login Page</title>
+</head>
+<body>
+    <div class="container2">
+        <div class="user-section">
+   	 <h1 id="usernameDisplay">error</h1>
+    	<button id="logoutButton">Logout</button>
+        </div>
+
+        <div class="search-section">
+<form id="form2" method="POST">
+<label for="yearSelect">Year:</label>
+<select name="year" id="yearSelect">
+ <option value="">Select</option>
+</select>
+
+<label for="semesterSelect">Semester:</label>
+<select name="semester" id="semesterSelect">
+ <option value="">Select</option>
+<option value="s">S</option>
+<option value="f">F</option>
+</select>
+
+<label for="classSelect">Subject:</label>
+<select name="class" id="classSelect">
+ <option value="">Select</option>
+</select>
+<label for="student_id">Student ID:</label>
+<input type="text" id="student_id" name="student_id">
+<input type="submit" value="Search">
+</form>
+	</div>
+        <div class="fuction-section">
+
+<input type="file" id="fileInput" style="display: none;">
+<button type="button" id="InputButton">Choose File</button>
+<input type="text" id="file_name" name="file_name" readonly>
+<button type="button" id="uploadButton">Upload</button>
+
+<button type="button" id="exportButton">Export</button>
+        </div>
+        <div class="result-section">
+        </div>
+	</div>
+    </div>
+<script>
+var userTypeGlobal
+var fileNameInput;
+var previewDataGlobal = null;
+var currentDisplayedData = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    initialize();
+});
+
+function initialize() {
+    var userId = localStorage.getItem('userId');
+    var userName = localStorage.getItem('userName');
+    var usernameElement = document.getElementById('usernameDisplay');
+	console.log('usernameElement:', usernameElement); 
+	console.log('userName:', userName); 
+	checkUserLogin(userId, userName, usernameElement);
+    var logoutButton = document.getElementById('logoutButton');
+    var searchForm = document.getElementById('form2');
+    var fileInput = document.getElementById('fileInput');
+    fileNameInput = document.getElementById('file_name');
+    var uploadButton = document.getElementById('uploadButton');
+    var InputButton = document.getElementById('InputButton');
+    var exportButton = document.getElementById('exportButton');
+    addEventListeners(logoutButton, searchForm, uploadButton, InputButton, fileInput, exportButton);
+
+    if (userId) {
+        loadYearData();
+        loadCourseData(userId);
+    }
+}
+
+function checkUserLogin(userId, userName, usernameElement) {
+    if (userId && usernameElement) {
+        console.log('UserId is present');
+        usernameElement.textContent = 'Welcome back, ' + userName + '!🎉';
+    } else if (!usernameElement) {
+        console.error('Username display element not found');
+    } else {
+        window.location.href = 'test.htm';
+    }
+}
+
+function addEventListeners(logoutButton, searchForm, uploadButton, InputButton, fileInput, exportButton) {
+    if (logoutButton) {
+        logoutButton.addEventListener('click', handleLogout);
+    }
+    if (searchForm) {
+        searchForm.addEventListener('submit', handleSearchSubmit);
+    }
+    if (uploadButton) {
+        uploadButton.addEventListener('click', handleFileUpload);
+    }
+    if (exportButton) {
+        exportButton.addEventListener('click', handleExportFile);
+    }
+    if (InputButton) {
+        InputButton.addEventListener('click', function() {
+            fileInput.click();
+        });
+    }
+    if (fileInput) {
+        fileInput.addEventListener('change', handleFileChange);
+    }
+}
+
+function loadYearData() {
+fetch('http://localhost:5000/get-earliest-year')
+            .then(response => response.json())
+            .then(data => {
+                var earliestYear = data.earliestYear;
+                var yearSelect = document.getElementById('yearSelect');
+                var currentYear = new Date().getFullYear();
+
+                for (var year = currentYear; year >= earliestYear; year--) {
+                    var option = new Option(year, year);
+                    yearSelect.add(option);
+                }
+            })
+            .catch(error => console.error('Error getting earliest year:', error));
+}
+
+function loadCourseData(userId) {
+    fetch(`http://localhost:5000/get-courses/${userId}`)
+        .then(response => response.json())
+        .then(data => {
+            userTypeGlobal = data.userType;
+            adjustInterfaceForUserType(userTypeGlobal);
+            var classSelect = document.getElementById('classSelect');
+            data.courses.forEach(function(course) { // 假设 courses 是课程数组
+                var option = new Option(course.subject, course.class_code);
+                classSelect.add(option);
+            });
+        })
+        .catch(error => console.error('Error getting courses:', error));
+}
+
+function adjustInterfaceForUserType(userTypeGlobal) {
+    if (userTypeGlobal === 'Student') {
+        // 隐藏导入和上传按钮
+        var InputButton = document.getElementById('InputButton');
+        var uploadButton = document.getElementById('uploadButton');
+        var file_name = document.getElementById('file_name'); // 假设这是与上传相关的文本标签的ID
+        var file_name = document.getElementById('file_name'); 
+        if (InputButton) {
+            InputButton.style.display = 'none';
+        }
+        if (uploadButton) {
+            uploadButton.style.display = 'none';
+        }
+        if (file_name) {
+            file_name.style.display = 'none';
+        }
+    }
+}
+
+function handleLogout() {
+            localStorage.removeItem('userId');
+            fetch('http://localhost:5000/logout', { method: 'POST' })
+                .then(() => {
+                    // 重定向到登录页面
+                    window.location.href = 'test.htm';
+                })
+                .catch(error => console.error('Logout Error:', error));
+}
+
+function handleSearchSubmit(event) {
+    event.preventDefault();
+    var userId = localStorage.getItem('userId');
+    var formData = {
+        year: document.getElementById('yearSelect').value,
+        semester: document.getElementById('semesterSelect').value,
+        subject: document.getElementById('classSelect').value,
+    };
+
+    fetch('http://localhost:5000/search/' + userId, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+	console.log("Received data:", data); // 查看返回的数据
+        displayTable(data); // 使用返回的数据来显示表格
+        adjustInterfaceForUserType(userTypeGlobal); // 根据 userTypeGlobal 调整界面
+    })
+    .catch(error => console.error('Search Error:', error));
+}
+
+function handleFileUpload() {
+    var file = fileInput.files[0];
+    if (!file) {
+        console.error('No file selected for upload');
+        return;
+    }
+    console.log('Uploading file:', file);
+    var formData = new FormData();
+    formData.append('file', file);
+    fetch('http://localhost:5000/upload/preview', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Server responded with ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.preview) {
+            var previewData = JSON.parse(data.preview);  // 解析 JSON 字符串
+            displayTable(previewData, function(resultSection) {
+                var saveButton = document.createElement('button');
+                saveButton.textContent = 'Save';
+                saveButton.addEventListener('click', function() {
+                    handleSave(previewData);  // 直接传递 previewData
+                });
+                resultSection.appendChild(saveButton);
+            });
+        }
+    })
+    .catch(error => console.error('Upload Error:', error));
+}
+
+function handleSave(previewData, fromUpload = true) {
+    let dataToSave;
+
+    if (fromUpload) {
+        dataToSave = previewData;
+    } else {
+        dataToSave = currentDisplayedData.map((row, index) => {
+            var tr = document.querySelector(`.result-section table tbody tr:nth-child(${index + 1})`);
+            var scoreInput = tr.querySelector('input[type="text"]');
+
+            // 此处不再检查 input 是否被禁用，因为您希望保存所有数据
+            return { 
+                'Student ID': row['Student ID'],
+                'Class_code': tr.dataset.classCode,
+                'Score': scoreInput.value 
+            };
+        }).filter(row => row !== null); // 过滤掉任何可能的 null 值
+    }
+
+    console.log('Data to save:', dataToSave);
+
+    fetch('http://localhost:5000/save/grades', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ grades: dataToSave })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Save successful:', data);
+        alert("Save successful!"); // 显示成功消息
+    })
+    .catch(error => {
+        console.error('Save Error:', error);
+        alert("Save Error: " + error); // 显示错误消息
+    });
+    console.log("Current displayed data:", currentDisplayedData);
+}
+
+function handleFileChange() {
+    var selectedFile = fileInput.files[0];
+    if (selectedFile) {
+        fileNameInput.value = selectedFile.name;
+    } else {
+        fileNameInput.value = '';
+    }
+}
+
+function displayTable(data) {
+    currentDisplayedData = data;
+    var resultSection = document.querySelector('.result-section');
+    resultSection.innerHTML = '';
+    var table = document.createElement('table');
+    var thead = document.createElement('thead');
+    var tbody = document.createElement('tbody');
+    var headerRow = document.createElement('tr');
+    var headers = ['Student ID', 'Name', 'Major', 'Year', 'Semester', 'Subject', 'Score'];
+
+    if (userTypeGlobal !== 'Student') {
+        headers.push('Action'); // 仅在用户不是学生时添加 'Action' 列
+    }
+
+    headers.forEach(headerText => {
+        var th = document.createElement('th');
+        th.textContent = headerText;
+        headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    data.forEach((row, index) => {
+        var tr = document.createElement('tr');
+        tr.dataset.classCode = row['Class_code'];
+
+        headers.forEach(header => {
+            var td = document.createElement('td');
+            if (header === 'Score') {
+                var input = document.createElement('input');
+                input.type = 'text';
+                input.value = row[header];
+                input.disabled = true;
+                td.appendChild(input);
+            } else if (header !== 'Action') {
+                td.textContent = row[header];
+            } else if (header === 'Action') {
+                if (userTypeGlobal !== 'Student') {
+                    var actionButton = document.createElement('button');
+                    actionButton.classList.add('edit-button');
+                    actionButton.textContent = 'Edit';
+                    actionButton.onclick = function() {
+                        handleEditSaveButtonClick(actionButton, tr, index);
+                    };
+                    td.appendChild(actionButton);
+                }
+            }
+            tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    resultSection.appendChild(table);
+
+    if (callback) {
+        callback(resultSection);
+    }
+}
+
+
+function handleEditSaveButtonClick(button, tr, index) {
+    var input = tr.querySelector('input[type="text"]');
+    var classCode = tr.dataset.classCode;
+
+    if (button.textContent === 'Edit') {
+        // 启用输入框并更改按钮为 'Save'
+        input.disabled = false;
+        button.textContent = 'Save';
+    } else {
+        // 更新currentDisplayedData
+        currentDisplayedData[index]['Score'] = input.value;
+        currentDisplayedData[index]['Class_code'] = classCode;
+
+        // 处理保存逻辑
+        input.disabled = true;
+        button.textContent = 'Edit';
+
+        // 仅在点击 'Save' 按钮时保存更改
+        handleSave(null, false);  // 传递 false 表示来自表格编辑
+    }
+}
+
+function saveUpdatedScore(studentId, classCode, score) {
+    fetch('http://localhost:5000/update/score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            studentId: studentId,
+            classCode: classCode,
+            score: score
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Score updated successfully');
+            // 可能需要更新当前显示的数据
+        } else {
+            console.error('Error updating score:', data.message);
+        }
+    })
+    .catch(error => console.error('Update Error:', error));
+}
+
+function handleExportFile() {
+    var orderedData = currentDisplayedData.map(row => ({
+        'Student ID': row['Student ID'],
+        'Name': row['Name'],
+        'Major': row['Major'],
+        'Year': row['Year'],
+        'Semester': row['Semester'],
+        'Subject': row['Subject'],
+        'Score': row['Score']
+    }));
+    fetch('http://localhost:5000/export', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ data: orderedData })
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        // 创建一个链接并模拟点击，下载文件
+        var url = window.URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'exported_data.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url); // 释放URL对象
+        a.remove();
+    })
+    .catch(error => console.error('Export Error:', error));
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="style1.css">
+<link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}?v=2">
+    <title>Login Page</title>
+</head>
+<body>
+    <div class="container1">
+        <div class="photo-section">
+        </div>
+        <div class="login-section">
+            <h1>Welcome</h1><h2 style="font-size:120%">Nice to see you again.</h2>
+            <form id="form1">
+                <label for="ID">ID:</label>
+                <input type="text" id="ID" name="ID">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password">
+                <input type="submit" value="Login">
+            </form>
+        </div>
+    </div>
+<script>
+        window.addEventListener('DOMContentLoaded', (event) => {
+            document.getElementById('form1').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                var ID = document.getElementById('ID').value;
+                var password = document.getElementById('password').value;
+
+                fetch('http://localhost:5000/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ID: ID, password: password})
+                })
+                .then(response => response.json())
+                .then(data => {
+		console.log(data); 
+                    if(data.success) {
+			localStorage.setItem('userId', data.userId);
+			localStorage.setItem('userName',data.userName);
+                        window.location.href = 'test1.htm'; // 跳转到 test1.htm
+                    } else {
+                        alert('Login failed: ' + data.error);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+    </script>
+<script type="module"></script>
+</body>
+</html>

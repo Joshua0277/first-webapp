@@ -1,0 +1,170 @@
+
+.item {background-color: lightblue;border: 1px solid black;}
+
+body {
+    margin: 0; /* 移除默认的 margin */
+    background: linear-gradient(to bottom right,  #FFD3B4, #ECECEC,#A4B0BE);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+}
+h1, h2 {
+    line-height: 1.5; /* 調整行間距 */
+    margin: 0; /* 移除頂部和底部的外邊距 */
+ margin-left: 10px;
+    padding: 0; /* 移除內邊距 */
+}
+body, html {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    font-family: Arial, sans-serif;
+color:rgba(20, 20, 50, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to bottom right, #FFD3B4, #ECECEC, #A4B0BE);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+}
+/* 第一頁 */
+.container1 {
+        width: 90%;
+    min-width: 600px; /* 設置最小寬度 */
+    height: 90vh;
+    min-height: 400px; /* 設置最小高度 */
+    background-color: rgba(255, 255, 255, 0.5); /* 主容器背景顏色 */
+    display: flex;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); /* 方框陰影 */
+    border-radius: 10px; /* 方框邊角圓滑 */
+}
+.photo-section {
+    flex: 5; /* 圖片部分佔據的比例 */
+    background-image: url('school-picture.jpg'); /* 圖片路徑 */
+    background-size: cover;
+    background-position: center;
+    border-radius: 10px 0 0 10px; /* 左邊圓角 */
+}
+.login-section {
+    flex: 2; /* 登錄部分佔據的比例 */
+min-width: 250px; /* 設置最小寬度 */
+max-width: 300px; /* 設置最小寬度 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    border-radius: 0 10px 10px 0; /* 右邊圓角 */
+}
+#form1 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px; /* 表單周圍的間距 */
+}
+/* 第二頁 */
+.container2 {
+    display: grid;
+    grid-template-columns: 2fr 3fr; /* 總共分為 5 份，左邊 2 份，右邊 3 份 */
+    grid-template-rows: 1fr 1fr 8fr;    /* 總共分為 10 份，上面 1 份，下面 5 份 */
+        width: 90%;
+    min-width: 600px; /* 設置最小寬度 */
+    height: 90vh;
+    min-height: 400px; /* 設置最小高度 */
+    background-color: rgba(255, 255, 255, 0.7); /* 主容器背景顏色 */
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); /* 方框陰影 */
+    border-radius: 10px; /* 方框邊角圓滑 */
+}
+
+.user-section {
+display: flex;
+ flex-direction: column;
+    align-items: flex-start; /* 確保子元素在垂直方向上置中 */
+    justify-content: flex-end; /* 子元素靠右對齊 */
+    grid-column: 1 / 2; /* 佔據第一列 */
+    grid-row: 1 / 2;    /* 佔據第一行 */
+    /* 特定樣式... */
+}
+
+.search-section {
+    display: flex;
+height: 100px; /* 設置最小高度 */
+    flex-direction: column; /* 子元素垂直排列 */
+    align-items:  flex-end;/* 子元素在垂直方向上置中 */
+    justify-content: center; /* 子元素在水平方向上置中 */
+    grid-column: 2 / 3; 
+    grid-row: 1 / 2;    
+}
+
+.fuction-section {
+height: 30px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    grid-row: 2 / 3; /* 佔據第二行 */
+    grid-column: 1 / 3; /* 橫跨兩列 */
+ padding-right: 10px
+}
+.result-section {
+    grid-row: 3 / 4;    /* 佔據第二行 */
+    /* 特定樣式... */
+}
+
+#form2 {
+    display: flex;
+    flex-direction: row; /* 設置子元素水平排列 */
+align-items: center; 
+    justify-content: flex-end; 
+    padding: 10px; /* 表單周圍的間距 */
+}
+label, input {
+margin:5px;white-space: nowrap;
+}
+
+input[type=text], input[type=password] {
+    margin-bottom: 10px;
+margin-top: 10px;
+    padding: 0px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+	 height:30px;
+}
+
+input[type=submit] {
+    align-self: center;
+    margin: 10px;
+border-radius: 5px;
+	 height:30px;
+border: 1px solid #5B5B5B;
+	width:70px
+}
+input[type="submit"][value="Logout"] {
+    margin-top: 0px; /* 或更小的值 */
+}
+input[type=submit]:hover {
+    background-color: #3a5ba0;
+
+}
+
+#yearSelect {
+    width: 60px; /* 或其他您想要的长度 */
+	 height:40px;
+border-radius: 5px;
+
+}
+#classSelect {
+    width: 200px; /* 或其他您想要的长度 */
+	 height:40px;
+border-radius: 5px
+}
+#semesterSelect {
+    width: 60px; /* 或其他您想要的长度 */
+	 height:40px;
+border-radius: 5px
+}
+#student_id
+{
+    width: 60px /* 或其他您想要的长度 */
+}
